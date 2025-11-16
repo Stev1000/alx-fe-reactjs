@@ -1,5 +1,5 @@
 // App.jsx
-import ProfilePage from './ProfilePage';  // NOT './UserProfile'
+import ProfilePage from './ProfilePage';
 import UserContext from './UserContext';
 
 function App() {

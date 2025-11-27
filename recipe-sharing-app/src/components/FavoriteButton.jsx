@@ -1,30 +1,28 @@
 import useRecipeStore from "./recipeStore";
 
-const FavoriteButton = ({ id }) => {
+const FavoriteButton = ({ recipeId }) => {
   const favorites = useRecipeStore((state) => state.favorites);
   const addFavorite = useRecipeStore((state) => state.addFavorite);
   const removeFavorite = useRecipeStore((state) => state.removeFavorite);
+  const generateRecommendations = useRecipeStore(
+    (state) => state.generateRecommendations
+  );
 
-  const isFavorite = favorites.includes(id);
+  const isFavorite = favorites.includes(recipeId);
 
   const toggleFavorite = () => {
-    if (isFavorite) removeFavorite(id);
-    else addFavorite(id);
+    if (isFavorite) {
+      removeFavorite(recipeId);
+    } else {
+      addFavorite(recipeId);
+    }
+
+    generateRecommendations(); // ⭐ ensures recommendations update
   };
 
   return (
-    <button
-      onClick={toggleFavorite}
-      style={{
-        background: isFavorite ? "gold" : "#444",
-        color: isFavorite ? "black" : "white",
-        padding: "6px 12px",
-        borderRadius: "6px",
-        marginTop: "10px",
-        cursor: "pointer",
-      }}
-    >
-      {isFavorite ? "★ Favorite" : "☆ Add to Favorites"}
+    <button onClick={toggleFavorite} style={{ marginTop: "10px" }}>
+      {isFavorite ? "❤️ Remove Favorite" : "🤍 Add to Favorites"}
     </button>
   );
 };

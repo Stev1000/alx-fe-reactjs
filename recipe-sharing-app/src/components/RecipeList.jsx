@@ -1,28 +1,31 @@
 import { Link } from "react-router-dom";
 import useRecipeStore from "./recipeStore";
+import FavoriteButton from "./FavoriteButton";
 
 const RecipeList = () => {
-  const recipes = useRecipeStore((state) => state.recipes);
-  const filteredRecipes = useRecipeStore((state) => state.filteredRecipes);
-  const searchTerm = useRecipeStore((state) => state.searchTerm);
+  const recipes = useRecipeStore((state) =>
+    state.filteredRecipes.length > 0
+      ? state.filteredRecipes
+      : state.recipes
+  );
 
-  const listToShow =
-    searchTerm.trim().length > 0 ? filteredRecipes : recipes;
+  if (recipes.length === 0) {
+    return <p>No recipes found.</p>;
+  }
 
   return (
     <div>
       <h2>Recipes</h2>
 
-      {listToShow.map((recipe) => (
-        <div key={recipe.id} style={{ marginBottom: "20px" }}>
-          <Link to={`/recipe/${recipe.id}`}>
-            <h3>{recipe.title}</h3>
-          </Link>
+      {recipes.map((recipe) => (
+        <div key={recipe.id}>
+          <Link to={`/recipe/${recipe.id}`}>{recipe.title}</Link>
           <p>{recipe.description}</p>
+
+          {/* ⭐ Safe Task 3 addition */}
+          <FavoriteButton recipeId={recipe.id} />
         </div>
       ))}
-
-      {listToShow.length === 0 && <p>No recipes found.</p>}
     </div>
   );
 };

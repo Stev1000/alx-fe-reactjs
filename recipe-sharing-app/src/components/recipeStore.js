@@ -1,20 +1,21 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 const useRecipeStore = create((set) => ({
   recipes: [],
 
-  // Task 0
+  // ⭐ Task 0 — Add recipe
   addRecipe: (newRecipe) =>
     set((state) => ({
       recipes: [...state.recipes, newRecipe],
     })),
 
-  // Task 1
+  // ⭐ Task 1 — Delete recipe
   deleteRecipe: (id) =>
     set((state) => ({
       recipes: state.recipes.filter((recipe) => recipe.id !== id),
     })),
 
+  // ⭐ Task 1 — Update recipe
   updateRecipe: (updatedRecipe) =>
     set((state) => ({
       recipes: state.recipes.map((recipe) =>
@@ -22,7 +23,7 @@ const useRecipeStore = create((set) => ({
       ),
     })),
 
-  // Task 2
+  // ⭐ Task 2 — Search
   searchTerm: "",
   filteredRecipes: [],
   setSearchTerm: (term) => set({ searchTerm: term }),
@@ -33,28 +34,24 @@ const useRecipeStore = create((set) => ({
       ),
     })),
 
-  // ⭐ TASK 3 — FAVORITES
+  // ⭐ Task 3 — Favorites
   favorites: [],
-
   addFavorite: (recipeId) =>
     set((state) => ({
       favorites: [...state.favorites, recipeId],
     })),
-
   removeFavorite: (recipeId) =>
     set((state) => ({
       favorites: state.favorites.filter((id) => id !== recipeId),
     })),
 
-  // ⭐ TASK 3 — RECOMMENDATIONS
+  // ⭐ Task 3 — Recommendations
   recommendations: [],
-
   generateRecommendations: () =>
     set((state) => {
       const recommended = state.recipes.filter((recipe) =>
         state.favorites.includes(recipe.id)
       );
-
       return { recommendations: recommended };
     }),
 }));

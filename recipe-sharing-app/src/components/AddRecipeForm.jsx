@@ -14,7 +14,7 @@ const AddRecipeForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="add-form" onSubmit={handleSubmit}>
       <h2>Add a Recipe</h2>
 
       <input
@@ -28,7 +28,7 @@ const AddRecipeForm = () => {
         value={description}
         placeholder="Description"
         onChange={(e) => setDescription(e.target.value)}
-      />
+      ></textarea>
 
       <button type="submit">Add Recipe</button>
     </form>

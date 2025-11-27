@@ -11,10 +11,10 @@ const SearchBar = () => {
 
   return (
     <input
+      className="search-input"
       type="text"
       placeholder="Search recipes..."
       onChange={handleChange}
-      style={{ padding: "8px", width: "250px", marginBottom: "20px" }}
     />
   );
 };

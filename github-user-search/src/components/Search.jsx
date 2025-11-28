@@ -1,23 +1,88 @@
-import axios from "axios";
+import { useState } from "react";
+import { searchUsers } from "../services/githubService";
 
-export async function searchUsers(username, location, minRepos, page = 1) {
-  try {
-    // Build query format required by GitHub
-    let q = "";
+export default function Search() {
+  const [username, setUsername] = useState("");
+  const [location, setLocation] = useState("");
+  const [minRepos, setMinRepos] = useState("");
+  const [results, setResults] = useState([]);
+  const [error, setError] = useState("");
 
-    if (username) q += `${username} in:login `;
-    if (location) q += `location:${location} `;
-    if (minRepos) q += `repos:>=${minRepos} `;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
 
-    const finalQuery = encodeURIComponent(q.trim());
+    try {
+      const data = await searchUsers(username, location, minRepos);
+      setResults(data.items || []);
+    } catch (err) {
+      setError("Failed to fetch users. Try again.");
+    }
+  };
 
-    // ❗ This line must appear EXACTLY for the checker to pass ❗
-    const url = `https://api.github.com/search/users?q=${finalQuery}&page=${page}&per_page=10`;
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        
+        <input
+          type="text"
+          placeholder="Enter GitHub username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full p-3 border rounded"
+        />
 
-    const response = await axios.get(url);
+        <input
+          type="text"
+          placeholder="Location (e.g. Rwanda)"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="w-full p-3 border rounded"
+        />
 
-    return response.data; // required by checker
-  } catch (error) {
-    throw new Error("GitHub API error");
-  }
+        <input
+          type="number"
+          placeholder="Minimum repositories"
+          value={minRepos}
+          onChange={(e) => setMinRepos(e.target.value)}
+          className="w-full p-3 border rounded"
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-3 rounded"
+        >
+          Search
+        </button>
+
+      </form>
+
+      {error && <p className="mt-4 text-red-600">{error}</p>}
+
+      <div className="mt-6 space-y-3">
+        {results.map((user) => (
+          <div
+            key={user.id}
+            className="p-4 border rounded shadow-sm flex items-center gap-4"
+          >
+            <img
+              src={user.avatar_url}
+              alt={user.login}
+              className="w-16 h-16 rounded-full"
+            />
+            <div>
+              <p className="font-bold">{user.login}</p>
+              <a
+                href={user.html_url}
+                target="_blank"
+                className="text-blue-600 underline"
+              >
+                View Profile
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }

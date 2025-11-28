@@ -1,31 +1,39 @@
 import { useState } from "react";
 import { searchUsers } from "../services/githubService";
+import UserCard from "./UserCard";
 
-function Search() {
+export default function Search() {
   const [username, setUsername] = useState("");
   const [location, setLocation] = useState("");
   const [minRepos, setMinRepos] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    setPage(1);
+    runSearch(1);
+  };
+
+  const runSearch = async (pageNum) => {
     setLoading(true);
     setError("");
     setResults([]);
 
     try {
-      const data = await searchUsers({
+      const data = await searchUsers(
         username,
         location,
         minRepos,
-      });
+        pageNum
+      );
 
-      if (!data || data.length === 0) {
+      if (!data.items || data.items.length === 0) {
         setError("No results found");
       } else {
-        setResults(data);
+        setResults(data.items);
       }
     } catch (err) {
       setError("Looks like we cant find the user");
@@ -35,83 +43,75 @@ function Search() {
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto">
-      <form
-        className="space-y-4 bg-white p-6 rounded-xl shadow"
-        onSubmit={handleSearch}
-      >
+    <div className="max-w-xl mx-auto mt-10 p-5">
+      <form onSubmit={handleSearch} className="space-y-4">
         <input
-          id="username"
           type="text"
           placeholder="Enter GitHub username"
-          className="w-full border rounded-lg p-3"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          className="w-full p-3 border rounded-lg"
         />
 
         <input
-          id="location"
           type="text"
-          placeholder="Location"
-          className="w-full border rounded-lg p-3"
+          placeholder="Location (e.g. Rwanda)"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
+          className="w-full p-3 border rounded-lg"
         />
 
         <input
-          id="minRepos"
           type="number"
           placeholder="Minimum repositories"
-          className="w-full border rounded-lg p-3"
           value={minRepos}
           onChange={(e) => setMinRepos(e.target.value)}
+          className="w-full p-3 border rounded-lg"
         />
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded-lg"
-        >
+        <button className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">
           Search
         </button>
       </form>
 
       {/* Loading */}
-      {loading && (
-        <p className="mt-4 text-center text-gray-600">Loading...</p>
-      )}
+      {loading && <p className="text-center mt-5">Loading...</p>}
 
       {/* Error */}
-      {error && (
-        <p className="mt-4 text-center text-red-600">{error}</p>
-      )}
+      {error && <p className="text-center text-red-600 mt-5">{error}</p>}
 
       {/* Results */}
-      <div className="mt-6 space-y-4">
+      <div className="mt-8 space-y-4">
         {results.map((user) => (
-          <div
-            key={user.id}
-            className="flex items-center gap-4 p-4 border rounded-lg shadow"
-          >
-            <img
-              src={user.avatar_url}
-              alt={user.login}
-              className="w-16 h-16 rounded-full"
-            />
-            <div>
-              <p className="font-bold">{user.login}</p>
-              <a
-                href={user.html_url}
-                target="_blank"
-                className="text-blue-600 underline"
-              >
-                View Profile
-              </a>
-            </div>
-          </div>
+          <UserCard key={user.id} user={user} />
         ))}
       </div>
+
+      {/* Pagination */}
+      {results.length > 0 && (
+        <div className="flex justify-between mt-6">
+          <button
+            disabled={page === 1}
+            onClick={() => {
+              setPage(page - 1);
+              runSearch(page - 1);
+            }}
+            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-40"
+          >
+            Prev
+          </button>
+
+          <button
+            onClick={() => {
+              setPage(page + 1);
+              runSearch(page + 1);
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
-
-export default Search;

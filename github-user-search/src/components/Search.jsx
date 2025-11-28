@@ -19,7 +19,7 @@ function Search() {
     const result = await fetchUserData(username);
 
     if (result?.message === "Not Found" || result === null) {
-      setError("Looks like we can not find the user");
+      setError("Looks like we cant find the user");
 
     } else {
       setUserData(result);

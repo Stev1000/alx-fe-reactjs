@@ -1,30 +1,22 @@
 import { useState } from "react";
 import { fetchUserData, searchUsers } from "../services/githubService";
+import UserCard from "./UserCard";
 
 export default function Search() {
   const [mode, setMode] = useState("basic");
 
-  // Basic search (Task 1)
+  // -------------------------------
+  // BASIC SEARCH (Task 1)
+  // -------------------------------
   const [usernameBasic, setUsernameBasic] = useState("");
   const [basicUser, setBasicUser] = useState(null);
   const [basicLoading, setBasicLoading] = useState(false);
   const [basicError, setBasicError] = useState("");
 
-  // Advanced search (Task 2)
-  const [username, setUsername] = useState("");
-  const [location, setLocation] = useState("");
-  const [minRepos, setMinRepos] = useState("");
-  const [results, setResults] = useState([]);
-  const [page, setPage] = useState(1);
-  const [advError, setAdvError] = useState("");
-
-  // --------------------------
-  // Task 1 handler
-  // --------------------------
   const handleBasic = async (e) => {
     e.preventDefault();
-    setBasicError("");
     setBasicUser(null);
+    setBasicError("");
     setBasicLoading(true);
 
     try {
@@ -37,22 +29,38 @@ export default function Search() {
     }
   };
 
-  // --------------------------
-  // Task 2 handler
-  // --------------------------
+  // -------------------------------
+  // ADVANCED SEARCH (Task 2)
+  // -------------------------------
+  const [username, setUsername] = useState("");
+  const [location, setLocation] = useState("");
+  const [minRepos, setMinRepos] = useState("");
+  const [results, setResults] = useState([]);
+  const [page, setPage] = useState(1);
+  const [advError, setAdvError] = useState("");
+
   const handleAdvanced = async (e) => {
     e.preventDefault();
     setAdvError("");
+    setResults([]);
 
     try {
       const data = await searchUsers({
         username,
         location,
         minRepos,
-        page: 1,
+        page: 1
       });
 
-      setResults(data.items || []);
+      // Fetch full details of each user
+      const detailedUsers = await Promise.all(
+        (data.items || []).map(async (u) => {
+          const res = await fetch(`https://api.github.com/users/${u.login}`);
+          return await res.json();
+        })
+      );
+
+      setResults(detailedUsers);
       setPage(1);
     } catch {
       setAdvError("Failed to fetch users");
@@ -60,21 +68,34 @@ export default function Search() {
   };
 
   const loadMore = async () => {
-    const newPage = page + 1;
+    const nextPage = page + 1;
+
     const data = await searchUsers({
       username,
       location,
       minRepos,
-      page: newPage,
+      page: nextPage
     });
 
-    setResults((prev) => [...prev, ...(data.items || [])]);
-    setPage(newPage);
+    const detailedUsers = await Promise.all(
+      (data.items || []).map(async (u) => {
+        const res = await fetch(`https://api.github.com/users/${u.login}`);
+        return await res.json();
+      })
+    );
+
+    setResults((prev) => [...prev, ...detailedUsers]);
+    setPage(nextPage);
   };
+
+  // -------------------------------
+  // RENDER
+  // -------------------------------
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-8">
-      {/* Mode Switch */}
+
+      {/* MODE SWITCH */}
       <div className="flex gap-4">
         <button
           onClick={() => setMode("basic")}
@@ -95,9 +116,10 @@ export default function Search() {
         </button>
       </div>
 
-      {/* =============================== */}
-      {/* TASK 1 — BASIC SEARCH (ALX)     */}
-      {/* =============================== */}
+      {/* ------------------ */}
+      {/* BASIC SEARCH (Task 1) */}
+      {/* ------------------ */}
+
       {mode === "basic" && (
         <div>
           <form onSubmit={handleBasic} className="flex gap-4">
@@ -116,16 +138,12 @@ export default function Search() {
           {basicError && <p className="text-red-600">{basicError}</p>}
 
           {basicUser && (
-            <div className="mt-6 space-y-2">
-              <img
-                src={basicUser.avatar_url}
-                width="120"
-                className="rounded"
-              />
+            <div className="mt-6">
+              <img src={basicUser.avatar_url} width="120" className="rounded" />
               <h3 className="text-xl font-bold">{basicUser.login}</h3>
               <a
-                className="text-blue-600 underline"
                 href={basicUser.html_url}
+                className="text-blue-600 underline"
                 target="_blank"
               >
                 View GitHub Profile
@@ -135,9 +153,10 @@ export default function Search() {
         </div>
       )}
 
-      {/* =============================== */}
-      {/* TASK 2 — ADVANCED SEARCH         */}
-      {/* =============================== */}
+      {/* ------------------ */}
+      {/* ADVANCED SEARCH (Task 2) */}
+      {/* ------------------ */}
+
       {mode === "advanced" && (
         <div className="space-y-6">
           <form onSubmit={handleAdvanced} className="space-y-4">
@@ -156,14 +175,14 @@ export default function Search() {
             />
 
             <input
-              className="border p-3 w-full"
               type="number"
+              className="border p-3 w-full"
               placeholder="Minimum Repositories"
               value={minRepos}
               onChange={(e) => setMinRepos(e.target.value)}
             />
 
-            <button className="bg-blue-600 text-white py-3 w-full rounded">
+            <button className="bg-blue-600 text-white w-full py-3 rounded">
               Search Users
             </button>
           </form>
@@ -172,25 +191,7 @@ export default function Search() {
 
           <div className="space-y-4">
             {results.map((user) => (
-              <div
-                key={user.id}
-                className="p-4 border rounded shadow flex items-center gap-4"
-              >
-                <img
-                  src={user.avatar_url}
-                  className="w-16 h-16 rounded-full"
-                />
-                <div>
-                  <p className="font-bold">{user.login}</p>
-                  <a
-                    href={user.html_url}
-                    target="_blank"
-                    className="text-blue-600 underline"
-                  >
-                    View Profile
-                  </a>
-                </div>
-              </div>
+              <UserCard key={user.id} user={user} />
             ))}
           </div>
 

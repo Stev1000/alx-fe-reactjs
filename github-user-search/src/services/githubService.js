@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Task 1 function (must be kept)
+// Task 1 function (MUST stay)
 export async function fetchUserData(username) {
   try {
     const response = await axios.get(`https://api.github.com/users/${username}`);
@@ -10,7 +10,7 @@ export async function fetchUserData(username) {
   }
 }
 
-// Task 2 function (NEW)
+// Task 2 function (advanced search)
 export async function searchUsers({ username, location, minRepos, page = 1 }) {
   try {
     let query = "";
